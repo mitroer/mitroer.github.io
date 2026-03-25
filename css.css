@@ -260,9 +260,6 @@ body, html {
     border-radius: 10px;
     pointer-events: auto;
     padding: 0 15px;
-    border-left: 20px solid transparent; 
-    border-right: 20px solid transparent;
-    background-clip: padding-box;
     /* ปรับให้เข็มเยื้องกลับมาครึ่งหนึ่งของความกว้างตัวเองเพื่อให้ตรงกลางเป๊ะ */
     transform: translateX(-50%); 
 
