@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>การประเมินความเสี่ยงอัลไซเมอร์เบื้องต้น</title>
+    <link rel="stylesheet" href="css.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --clock-size: 300px; }
+        @media (min-width: 768px) { :root { --clock-size: 350px; } }
+
+        /* --- สไตล์หน้า Farewell (หน้าบอกลา) --- */
+        #farewell-page {
+            display: none; 
+            background-color: #000000 !important; /* บังคับพื้นหลังดำสนิท */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            flex-direction: column;
+            justify-content: flex-end; /* ดันเนื้อหาไปด้านล่าง */
+            align-items: center;
+            z-index: 9000;
+            text-align: center;
+            color: white;
+            padding-bottom: 10vh; /* เว้นระยะจากขอบล่าง 10% ของหน้าจอ */
+        }
+
+        #farewell-text {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            max-width: 85%;
+            font-weight: 300;
+            color: #ffffff;
+            margin-bottom: 20px;
+        }
+
+        .loading-dots {
+            font-size: 0.9rem;
+            opacity: 0.6;
+            color: #aaaaaa;
+        }
+
+        /* ส่วนอื่นๆ คงเดิม */
+        #clock-face { position: relative; width: var(--clock-size); height: var(--clock-size); margin: 20px auto; }
+        .clock-center { width: 12px; height: 12px; background: #333; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; border: 2px solid white; }
+        .hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom center; border-radius: 10px; cursor: pointer; transform: translateX(-50%); }
+        #hour-hand { width: 8px; height: 22%; background: #333; z-index: 5; }
+        #minute-hand { width: 5px; height: 35%; background: #e74c3c; z-index: 6; }
+        .drop-zone { position: absolute; width: 44px; height: 44px; border: 2px dashed #88b04b; border-radius: 50%; transform: translate(-50%, -50%); display: flex; justify-content: center; align-items: center; }
+        .draggable-number { width: 42px; height: 42px; background: #444; color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: grab; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 100; }
+    </style>
+</head>
+<body>
+
+    <div id="loader-wrapper">
+        <video autoplay muted loop playsinline id="loading-video"><source src="bg dowload.mp4" type="video/mp4"></video>
+        <p style="color: white; margin-top: 20px; position: relative; z-index: 10;">กําลังโหลด...</p>
+        <div class="progress-container"><div id="progress-bar"></div></div>
+    </div>
+
+    <div id="white-fade-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: white; z-index: 99999; opacity: 0; pointer-events: none;"></div>
+
+    <div id="login-container" style="display: none;">
+        <div class="login-card">
+            <h2>ข้อมูลเบื้องต้น</h2>
+            <form id="info-form">
+                <div class="input-group"><label>อายุ</label><input type="number" id="user-age" placeholder="เช่น 50" required></div>
+                <div class="input-group">
+                    <label>เพศ</label>
+                    <select id="user-gender" required>
+                        <option value="" disabled selected>เลือกเพศ</option>
+                        <option value="male">ชาย</option><option value="female">หญิง</option><option value="other">อื่นๆ</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>ระดับวุฒิการศึกษา</label>
+                    <select id="user-education" required>
+                        <option value="" disabled selected>เลือกระดับวุฒิการศึกษา</option>
+                        <option value="below_m6">ตํ่ากว่ามัธยมศึกษาปีที่ 6</option><option value="m6">สูงกว่ามัธยมศึกษาปีที่ 6 หรือเทียบเท่า</option>
+                    </select>
+                </div>
+                <div class="input-group"><label>โรคประจำตัว (ถ้ามี)</label><input type="text" id="user-disease" placeholder="ระบุ หรือพิมพ์ 'ไม่มี'"></div>
+                <button type="submit" id="next-btn">ถัดไป</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="welcome-garden-page" style="display: none; opacity: 0;">
+        <video autoplay muted loop playsinline class="full-bg-video" id="welcome-video"><source src="bg dowload.mp4" type="video/mp4"></video>
+        <div class="video-overlay"></div>
+        <div class="welcome-container">
+            <h1 id="typing-text" style="font-size: 20px; color: #ffffff; text-align: center; padding: 0 20px;"></h1>
+            <button id="start-journey-btn" style="display: none; opacity: 0;">เริ่มเดินทาง</button>
+        </div>
+    </div>
+
+    <div id="memory-test-page" style="display: none; background-color: black; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; flex-direction: column; justify-content: center; align-items: center; z-index: 1000;">
+        <div id="words-container" style="display: none; opacity: 0; text-align: center; width: 90%;">
+            <h2 style="color: white; font-size: 8vw; font-weight: bold; letter-spacing: 4px; margin-bottom: 20px;">หลอดไฟ เก้าอี้ รถยนต์</h2>
+        </div>
+        <div style="position: absolute; bottom: 12%; width: 100%; text-align: center; padding: 0 20px;">
+            <p id="instruction-text" style="color: white; font-size: 20px; font-family: sans-serif; min-height: 1.5em;"></p>
+        </div>
+    </div>
+
+    <div id="clock-test-page" style="display: none; background-color: #f8fafc; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; flex-direction: column; justify-content: center; align-items: center; z-index: 2000;">
+        <div id="numbers-pile" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 30px; width: 90%; max-width: 450px;"></div>
+        <div id="clock-face">
+            <div id="clock-hands" style="display: none; position: absolute; width: 100%; height: 100%; pointer-events: none;">
+                <div id="hour-hand" class="hand"></div><div id="minute-hand" class="hand"></div><div class="clock-center"></div>
+            </div>
+        </div>
+        <div style="margin-top: 20px; text-align: center; width: 90%;">
+            <p id="clock-instruction" style="font-size: 1.1rem; color: #444; font-weight: bold; min-height: 3em;"></p>
+            <button id="clock-submit-btn" style="display: none; margin-top: 10px; padding: 14px 50px; background: #82954b; color: white; border: none; border-radius: 50px; cursor: pointer;">ส่งคำตอบนาฬิกา</button>
+        </div>
+    </div>
+
+    <div id="math-test-page" style="display: none; background-color: #fdf6e3; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; flex-direction: column; justify-content: center; align-items: center; z-index: 2500;">
+        <div id="math-paper" style="text-align: center; width: 85%; max-width: 450px; padding: 50px 30px; background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-left: 30px solid #ffcfcf;">
+            <div id="math-question-container" style="opacity: 0;">
+                <div id="math-display" style="font-size: 4rem; font-weight: bold; color: #333; margin-bottom: 20px;"><span id="current-num">100</span> - 7</div>
+                <div style="font-size: 2rem; color: #333; margin-bottom: 30px;">= ?</div>
+                <input type="number" id="math-answer" placeholder="คำตอบ" style="width: 160px; padding: 15px; font-size: 1.8rem; text-align: center; border: none; border-bottom: 2px solid #82954b; outline: none; background: transparent;">
+            </div>
+            <p style="color: #bbb; font-size: 0.9rem;">ข้อที่ <span id="math-step">1</span> / 5</p>
+        </div>
+        <div id="math-caption" style="margin-top: 40px; opacity: 0;"><p style="color: #5d4037; font-size: 1.3rem; font-weight: bold; text-align: center;">"ลืมไปเลยว่ามีการบ้าน! คุณช่วยเราทําหน่อยได้มั้ย?"</p></div>
+        <button id="math-next-btn" style="margin-top: 30px; padding: 12px 60px; background: #82954b; color: white; border: none; border-radius: 50px; cursor: pointer; opacity: 0;">ถัดไป</button>
+    </div>
+
+    <div id="recall-test-page" style="display: none; background-color: #fdf6e3; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; flex-direction: column; justify-content: space-between; align-items: center; z-index: 2800; padding: 60px 20px;">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;">
+            <div id="recall-input-container" style="opacity: 0; width: 100%; max-width: 400px; text-align: center;">
+                <p style="color: #82954b; font-weight: bold; margin-bottom: 20px;">ลองพิมพ์ 3 คำนั้นที่จำได้หน่อยสิ...</p>
+                <input type="text" id="recall-1" placeholder="คำที่ 1" class="recall-in" style="width:100%; padding:15px; margin-bottom:10px; border-radius:10px; border:1px solid #ccc;">
+                <input type="text" id="recall-2" placeholder="คำที่ 2" class="recall-in" style="width:100%; padding:15px; margin-bottom:10px; border-radius:10px; border:1px solid #ccc;">
+                <input type="text" id="recall-3" placeholder="คำที่ 3" class="recall-in" style="width:100%; padding:15px; margin-bottom:20px; border-radius:10px; border:1px solid #ccc;">
+                <button id="recall-next-btn" style="padding: 15px 80px; background: #82954b; color: white; border: none; border-radius: 50px;">ไปต่อ</button>
+            </div>
+        </div>
+        <p id="recall-caption" style="color: #5d4037; font-weight: bold; text-align: center;"></p>
+    </div>
+
+    <div id="orientation-test-page" style="display: none; background-color: #fdf6e3; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; flex-direction: column; justify-content: space-between; align-items: center; z-index: 2900; padding: 60px 20px;">
+        <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;">
+            <div id="orientation-input-container" style="opacity: 0; width: 100%; max-width: 400px; text-align: center;">
+                <p style="color: #82954b; font-weight: bold; margin-bottom: 20px;">ช่วยบอกเราหน่อยนะ</p>
+                <input type="number" id="ori-date" placeholder="วันที่เท่าไหร่?(เช่น 9)" style="width:100%; padding:15px; margin-bottom:10px; border-radius:10px; border:1px solid #ccc;">
+                <input type="text" id="ori-month" placeholder="เดือน(เช่น มีนาคม)" style="width:100%; padding:15px; margin-bottom:10px; border-radius:10px; border:1px solid #ccc;">
+                <input type="number" id="ori-year" placeholder="ปี(พ.ศ. หรือ ค.ศ.)" style="width:100%; padding:15px; margin-bottom:20px; border-radius:10px; border:1px solid #ccc;">
+                <button id="ori-next-btn" style="padding: 15px 80px; background: #82954b; color: white; border: none; border-radius: 50px;">ต่อไป</button>
+            </div>
+        </div>
+        <p id="orientation-caption" style="color: #5d4037; font-weight: bold; text-align: center;"></p>
+    </div>
+
+    <div id="farewell-page">
+        <p id="farewell-text"></p>
+        <div class="loading-dots">กำลังบันทึกความทรงจำ...</div>
+    </div>
+<div id="result-page" style="display: none;">
+    <header class="result-header">
+        <h1>สรุปผลการประเมิน</h1>
+        <p>เราขอขอบคุณที่คุณได้ร่วมแบ่งปันข้อมูลกับเราในวันนี้</p>
+    </header>
+
+    <div class="result-content-wrapper">
+        <div class="score-card">
+            <h3>คะแนนรวมรายด้าน</h3>
+            <div class="chart-container">
+                <canvas id="resultChart"></canvas>
+                <div class="chart-center-text">
+                    <span id="total-percentage">85%</span>
+                    <p>ภาพรวม</p>
+                </div>
+</div>
+            </div>
+
+        <div id="risk-card" class="risk-card">
+            <div class="icon-heart">🤍</div>
+            <p class="risk-label">ระดับความเสี่ยง</p>
+            <h2 id="risk-level-title">กำลังคำนวณ...</h2>
+            <div class="risk-box">
+                <p id="risk-description"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="advice-card">
+        <div class="advice-img">
+            <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Meditation">
+        </div>
+        <div class="advice-content">
+            <h3>💡 คำแนะนำพื้นฐานสำหรับคุณ</h3>
+            <ul id="advice-list">
+                </ul>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn-advice">📖 คำแนะนำพื้นฐาน</button>
+        <button class="btn-exit">➡️ จบการทำงาน</button>
+    </div>
+    
+    <div class="footer-icons">☘️ 🌸 🧠</div>
+</div>
+
+    <script src="java.js"></script>
+</body>
+</html>

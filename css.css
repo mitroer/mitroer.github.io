@@ -1,0 +1,480 @@
+/* --- 1. Reset & Global Styles --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Sarabun', sans-serif;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #f8fafc; /* เปลี่ยนพื้นหลังรวมให้ดูซอฟต์ขึ้น */
+}
+
+/* --- 2. Loader Section --- */
+#loader-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    background: #000;
+}
+
+#loading-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    z-index: -1;
+}
+
+.progress-container {
+    width: 200px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    margin-top: 15px;
+    overflow: hidden;
+}
+
+#progress-bar {
+    width: 0%;
+    height: 100%;
+    background: #ffffff;
+    transition: width 0.1s linear;
+}
+
+/* --- 3. Login Section --- */
+#login-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+   /* --- ใส่รูปภาพกลับคืนมาตรงนี้ --- */
+    background-image: url('bg\ still.jpg'); 
+    background-size: cover;
+    background-position: center;
+    /* ---------------------------- */
+    animation: fadeInUp 1s ease;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2.5rem;
+    border-radius: 25px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.input-group {
+    text-align: left;
+    margin-bottom: 1.2rem;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-weight: bold;
+}
+
+.input-group input, .input-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 16px;
+    outline: none;
+}
+
+#next-btn {
+    width: 100%;
+    padding: 14px;
+    background: #764ba2;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* --- 4. Welcome Garden --- */
+#welcome-garden-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 500;
+}
+
+.full-bg-video {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+}
+
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: -1;
+}
+
+.welcome-container {
+    width: 95%; 
+    max-width: 800px;
+    text-align: center;
+    z-index: 10;
+}
+
+#typing-text {
+    font-size: clamp(1.2rem, 4vw, 2rem);
+    color: #ffffff;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+    line-height: 1.6;
+    margin-bottom: 40px;
+}
+
+#start-journey-btn {
+    padding: 15px 60px;
+    font-size: 1.2rem;
+    background-color: #ffffff;
+    color: #88b04b;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    transition: 0.3s;
+}
+
+/* --- 5. หน้าทดสอบนาฬิกา (MINIMALIST VERSION: ไม่มีตัวเรือน) --- */
+#clock-test-page {
+    width: 100vw;
+    height: 100vh;
+    background-color: #f8fafc;
+    display: none; 
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+}
+
+#clock-face {
+    position: relative;
+    width: 320px; 
+    height: 320px;
+    background: transparent; /* โปร่งใส */
+    border: none;           /* ไม่มีขอบ */
+    margin: 20px auto;
+}
+
+.drop-zone {
+    position: absolute;
+    width: 46px;
+    height: 46px;
+    border: 2px dashed #88b04b;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: translate(-50%, -50%); /* จัดกึ่งกลางพิกัด */
+    pointer-events: none;
+    z-index: 1;
+}
+
+.draggable-number {
+    width: 42px;
+    height: 42px;
+    background: #444;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    font-weight: bold;
+    cursor: grab;
+    z-index: 100;
+    touch-action: none;
+    user-select: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.draggable-number:active {
+    cursor: grabbing;
+    scale: 1.1;
+}
+
+/* ระบบเข็มนาฬิกา */
+#clock-hands {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    pointer-events: none;
+}
+
+.clock-center {
+    width: 14px;
+    height: 14px;
+    background: #333;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 60;
+    border: 2px solid white;
+}
+
+.hand {
+    position: absolute;
+    /* วางโคนเข็มไว้ที่กึ่งกลางหน้าปัดพอดี */
+    bottom: 50%; 
+    left: 50%;
+    /* --- บรรทัดนี้สำคัญมาก: กำหนดให้หมุนที่ฐานเข็ม --- */
+    transform-origin: bottom center; 
+    /* ------------------------------------------- */
+    border-radius: 10px;
+    pointer-events: auto;
+    /* ปรับให้เข็มเยื้องกลับมาครึ่งหนึ่งของความกว้างตัวเองเพื่อให้ตรงกลางเป๊ะ */
+    transform: translateX(-50%); 
+
+}
+
+#hour-hand { 
+    width: 8px; 
+    height: 75px; 
+    background: #333; 
+}
+
+#minute-hand { 
+    width: 5px; 
+    height: 105px; 
+    background: #e74c3c; 
+}
+
+#clock-submit-btn {
+    margin-top: 30px;
+    padding: 14px 60px;
+    background-color: #82954b;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* --- 6. Animations & Overlays --- */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#white-fade-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: white;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    z-index: 10000;
+}
+/* หน้าบอกลา - พื้นหลังดำสนิท */
+#farewell-page {
+    display: none; /* ปิดไว้ก่อนเริ่ม */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000000; /* สีดำ */
+    z-index: 9999;
+    
+    /* จัดวาง Text ไว้ด้านล่าง */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; 
+    align-items: center;
+    padding-bottom: 80px; /* ระยะห่างจากขอบล่าง */
+}
+
+/* สไตล์ตัวอักษรสีขาวที่ค่อยๆ พิมพ์ */
+#farewell-text {
+    color: #ffffff; 
+    font-size: 1.2rem;
+    text-align: center;
+    max-width: 80%;
+    line-height: 1.6;
+    font-family: 'Kanit', sans-serif; /* หรือฟอนต์ที่คุณใช้ */
+    text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.3);
+}
+/* --- 7. Result Page Section (ปรับปรุงให้หายยืด) --- */
+#result-page {
+    background-color: #fcfbe7;
+    min-height: 100vh;
+    width: 100vw;
+    display: none; /* เริ่มต้นปิดไว้ */
+    flex-direction: column;
+    align-items: center;
+    /* เปิดให้เลื่อนหน้าจอได้ และเผื่อระยะขอบล่าง */
+    padding: 40px 15px 100px 15px; 
+    overflow-y: auto; 
+    box-sizing: border-box;
+}
+
+/* ส่วนหัวข้อ */
+.result-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.result-header h1 { color: #4a5d23; font-size: clamp(1.8rem, 5vw, 2.2rem); margin-bottom: 8px; }
+.result-header p { color: #82954b; font-size: 1rem; }
+
+/* Wrapper คลุมการ์ดคะแนนและความเสี่ยง */
+.result-content-wrapper {
+    display: flex;
+    flex-wrap: wrap; /* ให้การ์ดตกบรรทัดได้ถ้าที่พึ่งไม่พอ */
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+/* เมื่อดูในคอมพิวเตอร์ (จอใหญ่กว่า 768px) */
+@media (min-width: 768px) {
+    .result-content-wrapper {
+        flex-direction: row; /* คอม: วางการ์ดคู่กัน */
+        max-width: 850px;
+    }
+}
+
+/* สไตล์การ์ดทั่วไป */
+.score-card, .risk-card {
+    flex: 1;
+    min-width: 300px; /* กำหนดความกว้างขั้นต่ำไม่ให้เบียดกันจนอ่านไม่ออก */
+    min-height: 350px; /* ปรับให้พอดีกับเนื้อหา */
+    border-radius: 30px;
+    padding: 25px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* กราฟวงกลม */
+.chart-container {
+    position: relative;
+    width: 180px; 
+    height: 180px;
+    margin: 20px auto;
+}
+
+.chart-center-text {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+}
+.chart-center-text span { font-size: 2rem; font-weight: bold; color: #333; }
+
+/* การ์ดระดับความเสี่ยง */
+.risk-card {
+    background-color: #b4a7d6; /* ค่าเริ่มต้นสีม่วง */
+    color: white;
+}
+.risk-card h2 { margin: 15px 0; font-size: 1.6rem; }
+
+/* การ์ดคำแนะนำด้านล่าง */
+.advice-card {
+    background: #e9edda;
+    border-radius: 30px;
+    margin-top: 25px;
+    width: 100%;
+    max-width: 850px;
+    display: flex;
+    flex-direction: column; /* มือถือ: รูปอยู่บนเนื้อหา */
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+}
+
+@media (min-width: 768px) {
+    .advice-card { flex-direction: row; }
+    .advice-img img { width: 250px; height: 100%; }
+}
+
+.advice-img img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.advice-content {
+    padding: 30px;
+    text-align: left;
+}
+.advice-content h3 { color: #4a5d23; margin-bottom: 15px; }
+.advice-content ul { list-style: none; }
+.advice-content li { margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px; }
+
+/* ปุ่มกดตอนจบ */
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+.btn-advice, .btn-exit {
+    padding: 12px 30px;
+    border-radius: 50px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.btn-advice { background: #5d7038; color: white; }
+.btn-exit { background: #e0e4cc; color: #4a5d23; }
+
+/* เอา overflow: hidden ออกจาก body เพื่อให้เลื่อนหน้าผลลัพธ์ได้ */
+body.show-result {
+    overflow-y: auto !important;
+}
+.advice-img img {
+    width: 100%;
+    height: 200px; /* กำหนดความสูงรูปให้คงที่ */
+    object-fit: cover; /* ให้รูปไม่เบี้ยว */
+    border-radius: 20px 20px 0 0;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+    width: 100%;
+}
